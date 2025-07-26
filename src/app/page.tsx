@@ -363,7 +363,7 @@ export default function Page() {
                     />
                   ))}
                 </div>
-                <p className="text-gray-600 mb-4">"{review.text}"</p>
+                <p className="text-gray-600 mb-4">&quot;{review.text}&quot;</p>
                 <div>
                   <p className="font-semibold text-gray-900">{review.name}</p>
                   <p className="text-sm text-gray-500">{review.date}</p>
@@ -392,9 +392,9 @@ export default function Page() {
                   </h3>
                   <p className="text-gray-600 mb-6">
                     Set sail with Low Country Coastal Charters, where every trip
-                    is more than a boat ride — it's an unforgettable adventure
+                    is more than a boat ride — it&apos;s an unforgettable adventure
                     along the scenic waterways of the South Carolina coast.
-                    Whether you're seeking dolphin sightings, sunset serenity,
+                    Whether you&apos;re seeking dolphin sightings, sunset serenity,
                     romantic escapes, or a journey through the rich history of
                     the Lowcountry, Captain Bobby Baker is your trusted guide to
                     the region’s most captivating sights and stories.
