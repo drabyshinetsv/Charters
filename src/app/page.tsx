@@ -80,7 +80,7 @@ export default function Page() {
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 md:space-x-4">
-              <div className="w-16 md:w-22 h-8 md:h-12 flex items-center justify-center">
+              {/* <div className="w-16 md:w-22 h-8 md:h-12 flex items-center justify-center">
                 <Image
                   src="/logo.webp"
                   alt="logo"
@@ -88,6 +88,9 @@ export default function Page() {
                   height={200}
                   className="w-auto h-full"
                 />
+              </div> */}
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                <Anchor className="w-6 h-6 text-white" />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg md:text-xl font-bold text-gray-900">
