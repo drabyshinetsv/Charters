@@ -77,21 +77,29 @@ export default function Page() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="fixed top-0 w-full bg-white backdrop-blur-sm shadow-sm z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-22 h-12  flex items-center justify-center">
-                <Image src="/logo.webp" alt="logo" width={200} height={200} />
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <div className="w-16 md:w-22 h-8 md:h-12 flex items-center justify-center">
+                <Image
+                  src="/logo.webp"
+                  alt="logo"
+                  width={200}
+                  height={200}
+                  className="w-auto h-full"
+                />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Captain Robert
+              <div className="hidden sm:block">
+                <h1 className="text-lg md:text-xl font-bold text-gray-900">
+                  Low Country Coastal Charters
                 </h1>
-                <p className="text-sm text-gray-600">Charter Services</p>
+                <p className="text-xs md:text-sm text-gray-600">
+                  Charter Services
+                </p>
               </div>
             </div>
 
-            <nav className="hidden md:flex space-x-6">
+            <nav className="hidden lg:flex space-x-6">
               <button
                 onClick={() => scrollToSection("hero")}
                 className="text-gray-700 hover:text-blue-600 transition-colors"
@@ -130,8 +138,8 @@ export default function Page() {
               </button>
             </nav>
 
-            <div className="flex items-center space-x-4">
-              <div className="hidden lg:block text-right">
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <div className="hidden xl:block text-right">
                 <p className="text-sm font-semibold text-gray-900">
                   Robert Baker
                 </p>
@@ -143,11 +151,20 @@ export default function Page() {
               <Button
                 onClick={() => window.open("tel:843-860-0363")}
                 variant="ghost"
+                size="sm"
+                className="hidden sm:flex text-xs md:text-sm px-2 md:px-4"
               >
-                <Phone className="w-4 h-4 mr-2" />
-                (843) 860-0363
+                <Phone className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                <span className="hidden md:inline">(843) 860-0363</span>
+                <span className="md:hidden">Call</span>
               </Button>
-              <Button>Book Now</Button>
+              <Button
+                size="sm"
+                className="text-xs md:text-sm px-3 md:px-4 py-1 md:py-2"
+                onClick={() => scrollToSection("prices")}
+              >
+                Book Now
+              </Button>
             </div>
           </div>
         </div>
@@ -168,26 +185,30 @@ export default function Page() {
         </div>
 
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
             Premium Charter
             <span className="block text-blue-400">Experiences</span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8">
+          <p className="text-lg sm:text-xl md:text-2xl mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
             Discover the beauty of Charleston waters with Captain Robert Baker
           </p>
-          <div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               size="lg"
               onClick={() => window.open("tel:843-860-0363")}
-              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 mr-4"
+              className="bg-blue-600 hover:bg-blue-700 text-base md:text-lg px-6 md:px-8 py-3 md:py-4 w-full sm:w-auto"
             >
-              Book Now - (843) 860-0363
+              <Phone className="w-4 h-4 mr-2 sm:hidden" />
+              <span className="sm:hidden">Call Now</span>
+              <span className="hidden sm:inline">
+                Book Now - (843) 860-0363
+              </span>
             </Button>
             <Button
               size="lg"
               variant="outline"
               onClick={() => scrollToSection("services")}
-              className="border-white text-black hover:bg-white hover:text-gray-900 text-lg px-8 py-4"
+              className="border-white text-black hover:bg-white hover:text-gray-900 text-base md:text-lg px-6 md:px-8 py-3 md:py-4 w-full sm:w-auto"
             >
               Learn More
             </Button>
@@ -196,7 +217,7 @@ export default function Page() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-20 bg-gray-50">
+      <section id="services" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -224,8 +245,11 @@ export default function Page() {
               </div>
             ))}
           </div>
-
-          <div className="mt-16">
+        </div>
+      </section>
+      <section id="prices" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="mt-4">
             <div className="text-center mb-8">
               <h3 className="text-3xl font-bold text-gray-900 mb-2">
                 Charter Pricing
@@ -307,26 +331,24 @@ export default function Page() {
       {/* Gallery Section */}
       <section id="gallery" className="py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Our Gallery
-            </h2>
+          <div className={`text-center mb-16 transition-all duration-1000`}>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Gallery</h2>
           </div>
 
-          <div>
+          <div className="px-4 md:px-12">
             <Carousel className="w-full max-w-6xl mx-auto">
               <CarouselContent>
                 {galleryImages.map((image, index) => (
                   <CarouselItem
                     key={index}
-                    className="md:basis-1/2 lg:basis-1/3"
+                    className="basis-full sm:basis-1/2 lg:basis-1/3"
                   >
                     <div className="p-1">
                       <div className="aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden">
                         <Image
                           src={image}
                           alt={`Charter experience ${index + 1}`}
-                          className="object-cover hover:scale-105 transition-transform duration-300 w-full h-full"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                           width={800}
                           height={800}
                         />
@@ -335,8 +357,8 @@ export default function Page() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
+              <CarouselPrevious className="left-2 md:-left-12 size-10 md:size-8 bg-white/80 hover:bg-white border-2 shadow-lg backdrop-blur-sm" />
+              <CarouselNext className="right-2 md:-right-12 size-10 md:size-8 bg-white/80 hover:bg-white border-2 shadow-lg backdrop-blur-sm" />
             </Carousel>
           </div>
         </div>
@@ -392,12 +414,13 @@ export default function Page() {
                   </h3>
                   <p className="text-gray-600 mb-6">
                     Set sail with Low Country Coastal Charters, where every trip
-                    is more than a boat ride — it&apos;s an unforgettable adventure
-                    along the scenic waterways of the South Carolina coast.
-                    Whether you&apos;re seeking dolphin sightings, sunset serenity,
-                    romantic escapes, or a journey through the rich history of
-                    the Lowcountry, Captain Bobby Baker is your trusted guide to
-                    the region’s most captivating sights and stories.
+                    is more than a boat ride — it&apos;s an unforgettable
+                    adventure along the scenic waterways of the South Carolina
+                    coast. Whether you&apos;re seeking dolphin sightings, sunset
+                    serenity, romantic escapes, or a journey through the rich
+                    history of the Lowcountry, Captain Bobby Baker is your
+                    trusted guide to the region’s most captivating sights and
+                    stories.
                   </p>
                   <p className="text-gray-600 mb-6">
                     Climb aboard our comfortable, well-equipped vessel and
