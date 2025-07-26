@@ -1,0 +1,33 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21.1.0"
+      - name: Install dependencies
+        run: npm install -g pnpm && pnpm install
+      - name: Test
+        run: npm run test
+      - name: Run db migrate
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: npm run db:migrate
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: npx vercel --prod --token $VERCEL_TOKEN --yes --env POSTGRES_URL="${{ secrets.POSTGRES_URL }}"
