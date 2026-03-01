@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   Carousel,
   CarouselContent,
@@ -164,9 +165,9 @@ export default function Page() {
               <Button
                 size="sm"
                 className="text-xs md:text-sm px-3 md:px-4 py-1 md:py-2"
-                onClick={() => scrollToSection("prices")}
+                asChild
               >
-                Book Now
+                <Link href="/booking">Book Now</Link>
               </Button>
             </div>
           </div>

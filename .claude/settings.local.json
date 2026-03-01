@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "WebFetch(domain:dev.to)",
+      "Bash(yarn add:*)"
+    ]
+  }
+}
