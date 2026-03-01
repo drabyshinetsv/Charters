@@ -454,15 +454,6 @@ export default function Page() {
                     </p>
                   </div>
                 </div>
-                <div className="relative">
-                  <Image
-                    src="/person.webp"
-                    alt="Captain Robert"
-                    className="rounded-lg shadow-lg w-full"
-                    width={500}
-                    height={500}
-                  />
-                </div>
               </div>
             </div>
           </div>
