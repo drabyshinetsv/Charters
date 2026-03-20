@@ -5,13 +5,20 @@ import type { BookingFormData } from "@/lib/schemas/booking";
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
+  secure: false,
   auth: {
     user: process.env.GMAIL_USERNAME,
     pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
 
+const FALLBACK_OWNER_EMAIL = "lccoastalcharters@gmail.com";
+
 export async function sendBookingEmails(data: BookingFormData, bookingId: string) {
+  if (!process.env.GMAIL_USERNAME || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error("Email is not configured: missing GMAIL_USERNAME or GMAIL_APP_PASSWORD");
+  }
+
   const refId = bookingId.slice(0, 8).toUpperCase();
 
   const purposes = [
@@ -61,7 +68,7 @@ export async function sendBookingEmails(data: BookingFormData, bookingId: string
     // Notification to owner
     transporter.sendMail({
       from: `"Booking System" <${process.env.GMAIL_USERNAME}>`,
-      to: process.env.OWNER_EMAIL ?? process.env.GMAIL_USERNAME,
+      to: process.env.OWNER_EMAIL ?? FALLBACK_OWNER_EMAIL,
       subject: `New Booking Request – ${data.fullName}`,
       html: `
         <h2>New Booking Request</h2>
