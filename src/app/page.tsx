@@ -9,7 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Phone, MapPin, Star, Sunset, Users, Anchor, Fish } from "lucide-react";
+import { Phone, MapPin, Star, Sunset, Users, Anchor, Fish, Mail } from "lucide-react";
 import Image from "next/image";
 import LocationSection from "@/components/LocationSection";
 
@@ -145,7 +145,7 @@ export default function Page() {
             <div className="flex items-center space-x-2 md:space-x-4">
               <div className="hidden xl:block text-right">
                 <p className="text-sm font-semibold text-gray-900">
-                  Robert Baker
+                  Bobby Baker
                 </p>
                 <p className="text-sm text-gray-600">
                   <MapPin className="inline w-4 h-4 mr-1" />
@@ -439,6 +439,10 @@ export default function Page() {
                       (843) 860-0363
                     </p>
                     <p className="flex items-center text-gray-700">
+                      <Mail className="w-5 h-5 mr-3 text-blue-600" />
+                      lccoastalcharters@gmail.com
+                    </p>
+                    <p className="flex items-center text-gray-700">
                       <MapPin className="w-5 h-5 mr-3 text-blue-600" />
                       Charleston, South Carolina
                     </p>
@@ -476,7 +480,10 @@ export default function Page() {
                   <Phone className="w-4 h-4 mr-3" />
                   (843) 860-0363
                 </p>
-                <p className="text-gray-300 pl-7">robertsbaker3@gmail.com</p>
+                <p className="flex items-center text-gray-300">
+                  <Mail className="w-4 h-4 mr-3" />
+                  lccoastalcharters@gmail.com
+                </p>
                 <p className="flex items-center text-gray-300">
                   <MapPin className="w-4 h-4 mr-3" />
                   Charleston, SC
