@@ -417,31 +417,21 @@ export default function Page() {
                     Experience the Lowcountry with Captain Bobby Baker
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Set sail with Low Country Coastal Charters, where every trip
-                    is more than a boat ride — it&apos;s an unforgettable
-                    adventure along the scenic waterways of the South Carolina
-                    coast. Whether you&apos;re seeking dolphin sightings, sunset
-                    serenity, romantic escapes, or a journey through the rich
-                    history of the Lowcountry, Captain Bobby Baker is your
-                    trusted guide to the region’s most captivating sights and
-                    stories.
+                    Experience the water with Low Country Coastal Charters,
+                    where every trip is more than just a boat ride, it&apos;s a
+                    memorable journey through the scenic waterways of South
+                    Carolina&apos;s coast.
                   </p>
                   <p className="text-gray-600 mb-6">
-                    Climb aboard our comfortable, well-equipped vessel and
-                    discover:
+                    Whether you&apos;re hoping to spot dolphins, unwind on a
+                    peaceful sunset cruise, plan a romantic outing, or explore
+                    the rich history of the Lowcountry, each charter is
+                    designed to give you something special.
                   </p>
-                  <ul className="list-disc list-inside text-gray-600 mb-6">
-                    <li>Playful dolphins in their natural habitat</li>
-                    <li>Stunning sunset views that paint the sky</li>
-                    <li>Intimate cruises perfect for couples</li>
-                    <li>Relaxing sightseeing tours of the coast</li>
-                    <li>Fascinating tales from centuries of coastal history</li>
-                  </ul>
                   <p className="text-gray-600 mb-6">
-                    Let the rhythm of the tides and the warm southern breeze
-                    carry you away. With a lifetime on these waters, Captain
-                    Bobby brings deep knowledge, hospitality, and a personal
-                    touch to every charter.
+                    With Captain Bobby Baker at the helm, a Charleston native,
+                    you&apos;ll enjoy a personalized experience shaped by local
+                    knowledge, storytelling, and a true passion for the water.
                   </p>
                   <div className="space-y-2">
                     <p className="flex items-center text-gray-700">
