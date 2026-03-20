@@ -45,7 +45,7 @@ export default function Page() {
     },
   ];
 
-  const galleryImages = ["/photo1.webp", "/photo2.webp", "/photo3.webp", "/1.webp"];
+  const galleryImages = ["/photo1.webp", "/photo2.webp", "/photo3.webp"];
 
   const reviews = [
     {
