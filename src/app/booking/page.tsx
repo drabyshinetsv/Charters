@@ -195,6 +195,7 @@ export default function BookingPage() {
                   className={cn(inputClass, errors.charterType && "border-red-400 focus:border-red-400 focus:ring-red-400/20")}
                 >
                   <option value="">Select a charter type</option>
+                  <option value="Daytime Charter">Daytime Charter</option>
                   <option value="Sunset Cruise">Sunset Cruise</option>
                   <option value="Bachelorette Party">Bachelorette Party</option>
                 </select>
@@ -209,6 +210,7 @@ export default function BookingPage() {
                   id="numberOfGuests"
                   type="number"
                   min={1}
+                  max={6}
                   {...register("numberOfGuests", { valueAsNumber: true })}
                   aria-invalid={!!errors.numberOfGuests}
                   className={cn(inputClass, errors.numberOfGuests && "border-red-400 focus:border-red-400 focus:ring-red-400/20")}

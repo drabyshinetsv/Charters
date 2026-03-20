@@ -411,7 +411,7 @@ export default function Page() {
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-8 md:p-12">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div className="grid gap-8 items-center">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
                     Experience the Lowcountry with Captain Bobby Baker
@@ -454,15 +454,6 @@ export default function Page() {
                     </p>
                   </div>
                 </div>
-                <div className="relative">
-                  <Image
-                    src="/person.webp"
-                    alt="Captain Robert"
-                    className="rounded-lg shadow-lg w-full"
-                    width={500}
-                    height={500}
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -495,6 +486,7 @@ export default function Page() {
                   <Phone className="w-4 h-4 mr-3" />
                   (843) 860-0363
                 </p>
+                <p className="text-gray-300 pl-7">robertsbaker3@gmail.com</p>
                 <p className="flex items-center text-gray-300">
                   <MapPin className="w-4 h-4 mr-3" />
                   Charleston, SC
