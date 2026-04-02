@@ -9,7 +9,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Phone, MapPin, Star, Sunset, Users, Anchor, Fish, Mail } from "lucide-react";
+import {
+  Phone,
+  MapPin,
+  Star,
+  Sunset,
+  Users,
+  Anchor,
+  Fish,
+  Mail,
+} from "lucide-react";
 import Image from "next/image";
 import LocationSection from "@/components/LocationSection";
 
@@ -45,7 +54,15 @@ export default function Page() {
     },
   ];
 
-  const galleryImages = ["/photo1.webp", "/photo2.webp", "/photo3.webp"];
+  const galleryImages = [
+    "/photo1.webp",
+    "/photo2.webp",
+    "/photo3.webp",
+    "/photo4.webp",
+    "/photo5.webp",
+    "/photo6.webp",
+    "/photo7.webp",
+  ];
 
   const reviews = [
     {
@@ -425,8 +442,8 @@ export default function Page() {
                   <p className="text-gray-600 mb-6">
                     Whether you&apos;re hoping to spot dolphins, unwind on a
                     peaceful sunset cruise, plan a romantic outing, or explore
-                    the rich history of the Lowcountry, each charter is
-                    designed to give you something special.
+                    the rich history of the Lowcountry, each charter is designed
+                    to give you something special.
                   </p>
                   <p className="text-gray-600 mb-6">
                     With Captain Bobby Baker at the helm, a Charleston native,
