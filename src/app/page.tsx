@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import LocationSection from "@/components/LocationSection";
+import JsonLd from "@/components/JsonLd";
 
 export default function Page() {
   const scrollToSection = (sectionId: string) => {
@@ -48,13 +49,13 @@ export default function Page() {
   ];
 
   const galleryImages = [
-    "/photo1.webp",
-    "/photo2.webp",
-    "/photo3.webp",
-    "/photo4.webp",
-    "/photo5.webp",
-    "/photo6.webp",
-    "/photo7.webp",
+    { src: "/photo1.webp", alt: "Charter boat anchored in shallow water along the Charleston coastline" },
+    { src: "/photo2.webp", alt: "Charter boat on calm waters under dramatic cloudy skies in the Lowcountry" },
+    { src: "/photo3.webp", alt: "Charter boat docked near the Charleston marshlands on a clear day" },
+    { src: "/photo4.webp", alt: "View from the boat cruising through Charleston waterways with a bridge ahead" },
+    { src: "/photo5.webp", alt: "Captain Bobby Baker pointing out the USS Yorktown during a Charleston harbor tour" },
+    { src: "/photo6.webp", alt: "Captain steering the charter boat past the USS Yorktown and Charleston marina" },
+    { src: "/photo7.webp", alt: "Guest relaxing on the bow with the Ravenel Bridge in the background" },
   ];
 
   const reviews = [
@@ -86,6 +87,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-white">
+      <JsonLd />
       {/* Header */}
       <header className="fixed top-0 w-full bg-white backdrop-blur-sm shadow-sm z-50">
         <div className="container mx-auto px-4 py-3 md:py-4">
@@ -104,9 +106,9 @@ export default function Page() {
                 <Anchor className="w-6 h-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-lg md:text-xl font-bold text-gray-900">
+                <p className="text-lg md:text-xl font-bold text-gray-900">
                   Low Country Coastal Charters
-                </h1>
+                </p>
                 <p className="text-xs md:text-sm text-gray-600">
                   Charter Services
                 </p>
@@ -360,8 +362,8 @@ export default function Page() {
                     <div className="p-1">
                       <div className="aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden">
                         <Image
-                          src={image}
-                          alt={`Charter experience ${index + 1}`}
+                          src={image.src}
+                          alt={image.alt}
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                           width={800}
                           height={800}
@@ -484,7 +486,7 @@ export default function Page() {
                   <Anchor className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="text-xl font-bold">
-                  Captain Robert Charter Services
+                  Low Country Coastal Charters
                 </h3>
               </div>
               <p className="text-gray-400">
@@ -523,7 +525,7 @@ export default function Page() {
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
             <p>
-              &copy; 2025 Captain Robert Charter Services. All rights reserved.
+              &copy; 2025 Low Country Coastal Charters. All rights reserved.
             </p>
           </div>
         </div>

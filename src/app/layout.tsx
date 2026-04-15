@@ -42,6 +42,9 @@ export const metadata: Metadata = {
     "Remley's Point charter",
     "Captain Bobby Baker",
   ],
+  icons: {
+    icon: "/icon.svg",
+  },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
@@ -50,11 +53,20 @@ export const metadata: Metadata = {
     siteName,
     title: defaultTitle,
     description: defaultDescription,
+    images: [
+      {
+        url: "/hero.webp",
+        width: 1200,
+        height: 630,
+        alt: "Low Country Coastal Charters - Private Boat Charters in Charleston SC",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: defaultTitle,
     description: defaultDescription,
+    images: ["/hero.webp"],
   },
 };
 
