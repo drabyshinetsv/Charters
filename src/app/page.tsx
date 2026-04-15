@@ -423,12 +423,12 @@ export default function Page() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                About Captain Robert
+                About Captain Bobby Baker
               </h2>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-8 md:p-12">
-              <div className="grid gap-8 items-center">
+              <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
                     Experience the Lowcountry with Captain Bobby Baker
@@ -464,6 +464,16 @@ export default function Page() {
                       Charleston, South Carolina
                     </p>
                   </div>
+                </div>
+                <div className="relative">
+                  <Image
+                    src="/captain-bobby-baker.png"
+                    alt="Captain Bobby Baker"
+                    className="rounded-lg shadow-lg w-full object-cover aspect-[3/4] max-h-[520px] mx-auto"
+                    width={500}
+                    height={667}
+                    priority={false}
+                  />
                 </div>
               </div>
             </div>
