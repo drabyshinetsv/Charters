@@ -16,7 +16,6 @@ import {
   Sunset,
   Users,
   Anchor,
-  Fish,
   Mail,
 } from "lucide-react";
 import Image from "next/image";
@@ -45,12 +44,6 @@ export default function Page() {
       description:
         "Customize your perfect day on the water with our private charter service.",
       icon: <Users className="w-8 h-8" />,
-    },
-    {
-      title: "Fishing Expeditions",
-      description:
-        "Try your luck at catching the big one with our experienced fishing guides.",
-      icon: <Fish className="w-8 h-8" />,
     },
   ];
 
