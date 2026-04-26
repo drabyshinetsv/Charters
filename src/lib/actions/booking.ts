@@ -11,6 +11,32 @@ function getErrorMessage(error: unknown): string {
   return "Unknown error";
 }
 
+function mapDbErrorToUserMessage(dbMessage: string): string {
+  const normalized = dbMessage.toLowerCase();
+
+  if (normalized.includes("charter_type") && normalized.includes("enum")) {
+    return "Your database still has old charter type options. Please run the latest database migration, then try again.";
+  }
+
+  if (
+    normalized.includes("column") &&
+    (normalized.includes("charter_type") ||
+      normalized.includes("charter_end_date") ||
+      normalized.includes("cruising_destination"))
+  ) {
+    return "Booking table columns are out of sync with this app version. Please run the latest database migration.";
+  }
+
+  if (
+    normalized.includes("null value") &&
+    (normalized.includes("charter_end_date") || normalized.includes("cruising_destination"))
+  ) {
+    return "Your production database requires legacy booking fields. Please run the latest migration to update the booking table.";
+  }
+
+  return "We could not submit your booking right now. Please try again.";
+}
+
 type CreateBookingResult =
   | { success: true; bookingId: string }
   | { success: false; message: string };
@@ -49,7 +75,7 @@ export async function createBooking(data: BookingFormData): Promise<CreateBookin
         .returning({ id: bookings.id });
     } else {
       console.error("Failed to create booking:", error);
-      return { success: false, message: "We could not submit your booking right now. Please try again." };
+      return { success: false, message: mapDbErrorToUserMessage(dbMessage) };
     }
   }
 
