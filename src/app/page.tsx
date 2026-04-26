@@ -411,8 +411,18 @@ export default function Page() {
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-8 md:p-12">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="md:col-span-2">
+              <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div>
+                  <Image
+                    src="/captain-robert.png"
+                    alt="Captain Robert"
+                    width={700}
+                    height={980}
+                    className="w-full max-w-sm mx-auto rounded-lg object-cover shadow-md"
+                    priority={false}
+                  />
+                </div>
+                <div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
                     Experience the Lowcountry with Captain Bobby Baker
                   </h3>

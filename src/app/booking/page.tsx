@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { createBooking } from "@/lib/actions/booking";
 import { bookingSchema, type BookingFormData } from "@/lib/schemas/booking";
+import { isDateUnavailable } from "@/lib/booking-availability";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-colors";
@@ -25,6 +26,8 @@ export default function BookingPage() {
     handleSubmit,
     watch,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -57,6 +60,24 @@ export default function BookingPage() {
 
   const flexibleDates = watch("flexibleDates");
   const purposeOther = watch("purposeOther");
+  const charterDateRegister = register("charterStartDate", {
+    onChange: (event) => {
+      const selectedDate = event.target.value as string;
+      if (!selectedDate) return;
+
+      if (isDateUnavailable(selectedDate)) {
+        setValue("charterStartDate", "", { shouldValidate: true });
+        setError("charterStartDate", {
+          type: "validate",
+          message: "Please choose Monday, Wednesday, or Thursday.",
+        });
+        toast.error("Only Monday, Wednesday, and Thursday can be selected.");
+        return;
+      }
+
+      clearErrors("charterStartDate");
+    },
+  });
 
   if (submitted) {
     return (
@@ -219,15 +240,16 @@ export default function BookingPage() {
 
               <div>
                 <Label htmlFor="charterStartDate" className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Preferred Date
+                  Preferred Dates
                 </Label>
                 <input
                   id="charterStartDate"
                   type="date"
-                  {...register("charterStartDate")}
+                  {...charterDateRegister}
                   aria-invalid={!!errors.charterStartDate}
                   className={cn(inputClass, errors.charterStartDate && "border-red-400 focus:border-red-400 focus:ring-red-400/20")}
                 />
+                <p className="text-xs text-gray-500 mt-1">Available days: Monday, Wednesday, Thursday</p>
                 {errors.charterStartDate && <p className="text-sm text-red-500 mt-1">{errors.charterStartDate.message}</p>}
               </div>
 
