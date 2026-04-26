@@ -52,7 +52,14 @@ export default function BookingPage() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: createBooking,
-    onSuccess: (data) => setSubmitted({ bookingId: data.bookingId }),
+    onSuccess: (data) => {
+      if (!data.success) {
+        toast.error(data.message || "Something went wrong");
+        return;
+      }
+
+      setSubmitted({ bookingId: data.bookingId });
+    },
     onError: (err: Error) => toast.error(err.message || "Something went wrong"),
   });
 

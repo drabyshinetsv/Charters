@@ -11,14 +11,18 @@ function getErrorMessage(error: unknown): string {
   return "Unknown error";
 }
 
-export async function createBooking(data: BookingFormData): Promise<{ success: true; bookingId: string }> {
+type CreateBookingResult =
+  | { success: true; bookingId: string }
+  | { success: false; message: string };
+
+export async function createBooking(data: BookingFormData): Promise<CreateBookingResult> {
   const parsed = bookingSchema.safeParse(data);
-  if (!parsed.success) throw new Error(parsed.error.issues[0].message);
+  if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Invalid form data" };
 
   const d = parsed.data;
   const unavailableDateMessage = getDateUnavailableMessage(d.charterStartDate);
   if (unavailableDateMessage) {
-    throw new Error(unavailableDateMessage);
+    return { success: false, message: unavailableDateMessage };
   }
 
   const bookingValues = {
@@ -45,11 +49,11 @@ export async function createBooking(data: BookingFormData): Promise<{ success: t
         .returning({ id: bookings.id });
     } else {
       console.error("Failed to create booking:", error);
-      throw new Error("We could not submit your booking right now. Please try again.");
+      return { success: false, message: "We could not submit your booking right now. Please try again." };
     }
   }
 
-  if (!result?.[0]) throw new Error("Failed to create booking");
+  if (!result?.[0]) return { success: false, message: "Failed to create booking" };
 
   await sendBookingEmails(d, result[0].id).catch((err) => {
     console.error("Failed to send booking emails:", err);
