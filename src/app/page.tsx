@@ -190,7 +190,7 @@ export default function Page() {
 
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
-            Premium Charter
+            The Premium Charter
             <span className="block text-blue-400">Experience</span>
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
