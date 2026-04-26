@@ -235,6 +235,7 @@ export default function BookingPage() {
                   aria-invalid={!!errors.numberOfGuests}
                   className={cn(inputClass, errors.numberOfGuests && "border-red-400 focus:border-red-400 focus:ring-red-400/20")}
                 />
+                <p className="text-xs text-gray-500 mt-1">You can book up to 6 people.</p>
                 {errors.numberOfGuests && <p className="text-sm text-red-500 mt-1">{errors.numberOfGuests.message}</p>}
               </div>
 
