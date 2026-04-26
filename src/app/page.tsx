@@ -9,18 +9,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import {
-  Phone,
-  MapPin,
-  Star,
-  Sunset,
-  Users,
-  Anchor,
-  Mail,
-} from "lucide-react";
+import { Phone, MapPin, Star, Sunset, Users, Anchor, Fish } from "lucide-react";
 import Image from "next/image";
 import LocationSection from "@/components/LocationSection";
-import JsonLd from "@/components/JsonLd";
 
 export default function Page() {
   const scrollToSection = (sectionId: string) => {
@@ -46,17 +37,15 @@ export default function Page() {
         "Customize your perfect day on the water with our private charter service.",
       icon: <Users className="w-8 h-8" />,
     },
+    {
+      title: "Fishing Expeditions",
+      description:
+        "Try your luck at catching the big one with our experienced fishing guides.",
+      icon: <Fish className="w-8 h-8" />,
+    },
   ];
 
-  const galleryImages = [
-    { src: "/photo1.webp", alt: "Charter boat anchored in shallow water along the Charleston coastline" },
-    { src: "/photo2.webp", alt: "Charter boat on calm waters under dramatic cloudy skies in the Lowcountry" },
-    { src: "/photo3.webp", alt: "Charter boat docked near the Charleston marshlands on a clear day" },
-    { src: "/photo4.webp", alt: "View from the boat cruising through Charleston waterways with a bridge ahead" },
-    { src: "/photo5.webp", alt: "Captain Bobby Baker pointing out the USS Yorktown during a Charleston harbor tour" },
-    { src: "/photo6.webp", alt: "Captain steering the charter boat past the USS Yorktown and Charleston marina" },
-    { src: "/photo7.webp", alt: "Guest relaxing on the bow with the Ravenel Bridge in the background" },
-  ];
+  const galleryImages = ["/photo1.webp","/photo2.webp","/photo3.webp","/1.webp", "/2.webp", "/3.webp", "/4.webp", "/5.webp"];
 
   const reviews = [
     {
@@ -87,7 +76,6 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-white">
-      <JsonLd />
       {/* Header */}
       <header className="fixed top-0 w-full bg-white backdrop-blur-sm shadow-sm z-50">
         <div className="container mx-auto px-4 py-3 md:py-4">
@@ -106,9 +94,9 @@ export default function Page() {
                 <Anchor className="w-6 h-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <p className="text-lg md:text-xl font-bold text-gray-900">
+                <h1 className="text-lg md:text-xl font-bold text-gray-900">
                   Low Country Coastal Charters
-                </p>
+                </h1>
                 <p className="text-xs md:text-sm text-gray-600">
                   Charter Services
                 </p>
@@ -157,7 +145,7 @@ export default function Page() {
             <div className="flex items-center space-x-2 md:space-x-4">
               <div className="hidden xl:block text-right">
                 <p className="text-sm font-semibold text-gray-900">
-                  Bobby Baker
+                  Robert Baker
                 </p>
                 <p className="text-sm text-gray-600">
                   <MapPin className="inline w-4 h-4 mr-1" />
@@ -203,7 +191,7 @@ export default function Page() {
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight">
             Premium Charter
-            <span className="block text-blue-400">Experiences</span>
+            <span className="block text-blue-400">Experience</span>
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
             Discover the beauty of Charleston waters with Captain Robert Baker
@@ -245,7 +233,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service, index) => (
               <div
                 key={index}
@@ -362,8 +350,8 @@ export default function Page() {
                     <div className="p-1">
                       <div className="aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden">
                         <Image
-                          src={image.src}
-                          alt={image.alt}
+                          src={image}
+                          alt={`Charter experience ${index + 1}`}
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                           width={800}
                           height={800}
@@ -418,32 +406,42 @@ export default function Page() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                About Captain Bobby Baker
+                About Captain Robert
               </h2>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-8 md:p-12">
               <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div>
+                <div className="md:col-span-2">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
                     Experience the Lowcountry with Captain Bobby Baker
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Experience the water with Low Country Coastal Charters,
-                    where every trip is more than just a boat ride, it&apos;s a
-                    memorable journey through the scenic waterways of South
-                    Carolina&apos;s coast.
+                    Set sail with Low Country Coastal Charters, where every trip
+                    is more than a boat ride — it&apos;s an unforgettable
+                    adventure along the scenic waterways of the South Carolina
+                    coast. Whether you&apos;re seeking dolphin sightings, sunset
+                    serenity, romantic escapes, or a journey through the rich
+                    history of the Lowcountry, Captain Bobby Baker is your
+                    trusted guide to the region’s most captivating sights and
+                    stories.
                   </p>
                   <p className="text-gray-600 mb-6">
-                    Whether you&apos;re hoping to spot dolphins, unwind on a
-                    peaceful sunset cruise, plan a romantic outing, or explore
-                    the rich history of the Lowcountry, each charter is designed
-                    to give you something special.
+                    Climb aboard our comfortable, well-equipped vessel and
+                    discover:
                   </p>
+                  <ul className="list-disc list-inside text-gray-600 mb-6">
+                    <li>Playful dolphins in their natural habitat</li>
+                    <li>Stunning sunset views that paint the sky</li>
+                    <li>Intimate cruises perfect for couples</li>
+                    <li>Relaxing sightseeing tours of the coast</li>
+                    <li>Fascinating tales from centuries of coastal history</li>
+                  </ul>
                   <p className="text-gray-600 mb-6">
-                    With Captain Bobby Baker at the helm, a Charleston native,
-                    you&apos;ll enjoy a personalized experience shaped by local
-                    knowledge, storytelling, and a true passion for the water.
+                    Let the rhythm of the tides and the warm southern breeze
+                    carry you away. With a lifetime on these waters, Captain
+                    Bobby brings deep knowledge, hospitality, and a personal
+                    touch to every charter.
                   </p>
                   <div className="space-y-2">
                     <p className="flex items-center text-gray-700">
@@ -451,24 +449,10 @@ export default function Page() {
                       (843) 860-0363
                     </p>
                     <p className="flex items-center text-gray-700">
-                      <Mail className="w-5 h-5 mr-3 text-blue-600" />
-                      lccoastalcharters@gmail.com
-                    </p>
-                    <p className="flex items-center text-gray-700">
                       <MapPin className="w-5 h-5 mr-3 text-blue-600" />
                       Charleston, South Carolina
                     </p>
                   </div>
-                </div>
-                <div className="relative">
-                  <Image
-                    src="/captain-bobby-baker.png"
-                    alt="Captain Bobby Baker"
-                    className="rounded-lg shadow-lg w-full object-cover aspect-[3/4] max-h-[520px] mx-auto"
-                    width={500}
-                    height={667}
-                    priority={false}
-                  />
                 </div>
               </div>
             </div>
@@ -486,7 +470,7 @@ export default function Page() {
                   <Anchor className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="text-xl font-bold">
-                  Low Country Coastal Charters
+                  Captain Robert Charter Services
                 </h3>
               </div>
               <p className="text-gray-400">
@@ -501,10 +485,6 @@ export default function Page() {
                 <p className="flex items-center text-gray-300">
                   <Phone className="w-4 h-4 mr-3" />
                   (843) 860-0363
-                </p>
-                <p className="flex items-center text-gray-300">
-                  <Mail className="w-4 h-4 mr-3" />
-                  lccoastalcharters@gmail.com
                 </p>
                 <p className="flex items-center text-gray-300">
                   <MapPin className="w-4 h-4 mr-3" />
@@ -525,7 +505,7 @@ export default function Page() {
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
             <p>
-              &copy; 2025 Low Country Coastal Charters. All rights reserved.
+              &copy; 2025 Captain Robert Charter Services. All rights reserved.
             </p>
           </div>
         </div>

@@ -3,12 +3,18 @@ import { db } from "@/lib/db";
 import { bookings } from "@/lib/db/schema";
 import { bookingSchema, type BookingFormData } from "@/lib/schemas/booking";
 import { sendBookingEmails } from "@/lib/email";
+import { getDateUnavailableMessage } from "@/lib/booking-availability";
 
 export async function createBooking(data: BookingFormData): Promise<{ success: true; bookingId: string }> {
   const parsed = bookingSchema.safeParse(data);
   if (!parsed.success) throw new Error(parsed.error.issues[0].message);
 
   const d = parsed.data;
+  const unavailableDateMessage = getDateUnavailableMessage(d.charterStartDate);
+  if (unavailableDateMessage) {
+    throw new Error(unavailableDateMessage);
+  }
+
   const result = await db.insert(bookings).values({
     ...d,
     purposeOtherDesc: d.purposeOther ? (d.purposeOtherDesc ?? null) : null,

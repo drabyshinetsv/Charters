@@ -197,7 +197,6 @@ export default function BookingPage() {
                   <option value="">Select a charter type</option>
                   <option value="Daytime Charter">Daytime Charter</option>
                   <option value="Sunset Cruise">Sunset Cruise</option>
-                  <option value="Bachelorette Party">Bachelorette Party</option>
                 </select>
                 {errors.charterType && <p className="text-sm text-red-500 mt-1">{errors.charterType.message}</p>}
               </div>

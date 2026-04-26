@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const DEPARTURE_LOCATIONS = ["Remley's Point", "Wappoo Cut Boat Landing", "Folly River Boat Ramp"] as const;
-const CHARTER_TYPES = ["Daytime Charter", "Sunset Cruise", "Bachelorette Party"] as const;
+const CHARTER_TYPES = ["Daytime Charter", "Sunset Cruise"] as const;
 
 export const bookingSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -9,7 +9,11 @@ export const bookingSchema = z.object({
   phone: z.string().min(7, "Phone number is required"),
   contactMethodEmail: z.boolean(),
   contactMethodPhone: z.boolean(),
-  numberOfGuests: z.number({ invalid_type_error: "Enter a number" }).int().min(1, "At least 1 guest").max(6, "Maximum 6 guests"),
+  numberOfGuests: z
+    .number({ invalid_type_error: "Enter a number" })
+    .int()
+    .min(1, "At least 1 guest")
+    .max(6, "Maximum 6 guests"),
   charterStartDate: z.string().min(1, "Start date is required"),
   flexibleDates: z.boolean(),
   charterType: z.enum(CHARTER_TYPES, { errorMap: () => ({ message: "Select a charter type" }) }),
