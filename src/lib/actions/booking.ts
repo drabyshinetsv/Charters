@@ -192,7 +192,7 @@ export async function createBooking(data: BookingFormData): Promise<CreateBookin
           returning id
         `);
 
-        const legacyId = legacyResult.rows?.[0]?.id;
+        const legacyId = legacyResult[0]?.id;
         if (!legacyId) {
           return { success: false, message: "Failed to create booking" };
         }
