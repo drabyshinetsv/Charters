@@ -1,12 +1,15 @@
-import { DefaultSession, User as SessionUser } from "next-auth";
-
-// eslint-disable-next-line
-import { JWT } from "next-auth/jwt";
+import { DefaultSession } from "next-auth";
 
 declare module "next-auth/jwt" {
   interface JWT {
     token?: string;
-    user?: SessionUser;
+    user?: {
+      id?: string;
+      userId?: number;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
     refreshToken?: string;
     isOidc?: boolean;
   }
@@ -25,6 +28,6 @@ declare module "next-auth" {
     token?: string;
     id?: number;
     refreshToken?: string;
-    user: DefaultSession["user"] & { userId?: number };
+    user?: DefaultSession["user"] & { userId?: number };
   }
 }

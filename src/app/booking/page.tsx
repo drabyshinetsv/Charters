@@ -344,7 +344,6 @@ export default function BookingPage() {
                     id="charterStartDate"
                     type="button"
                     onClick={() => setIsCalendarOpen((open) => !open)}
-                    aria-invalid={!!errors.charterStartDate}
                     className={cn(
                       inputClass,
                       "flex items-center justify-between text-left",

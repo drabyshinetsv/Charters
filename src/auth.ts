@@ -58,11 +58,8 @@ export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
         token.user = user;
       }
 
-      if (trigger === "update" && session?.user?.name) {
-        token.user = {
-          ...token.user,
-          name: session.user.name,
-        };
+      if (trigger === "update" && session?.user?.name && token.user) {
+        token.user.name = session.user.name;
       }
 
       return token;
