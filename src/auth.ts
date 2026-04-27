@@ -58,8 +58,10 @@ export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
         token.user = user;
       }
 
+      // Keep JWT update handling simple to avoid type drift across Auth.js releases.
       if (trigger === "update" && session?.user?.name && token.user) {
-        token.user.name = session.user.name;
+        const currentUser = token.user as { name?: string | null };
+        currentUser.name = session.user.name;
       }
 
       return token;
