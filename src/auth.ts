@@ -37,8 +37,6 @@ export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
   ],
   callbacks: {
     jwt: async ({ token, user, trigger, session }) => {
-      console.log("jwt", token, user, trigger, session);
-
       if (user) {
         token.user = user;
       }
@@ -53,7 +51,9 @@ export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
       return token;
     },
     session: async ({ session, token }) => {
-      session["user"]["userId"] = token.user.userId as number;
+      if (session.user && token.user && typeof token.user === "object" && "userId" in token.user) {
+        session.user.userId = token.user.userId as number;
+      }
 
       return session;
     },

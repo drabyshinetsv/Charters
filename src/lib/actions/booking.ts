@@ -6,7 +6,34 @@ import { sendBookingEmails } from "@/lib/email";
 import { getDateUnavailableMessage } from "@/lib/booking-availability";
 
 function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error) {
+    const nested = error as Error & {
+      cause?: unknown;
+      detail?: string;
+      hint?: string;
+      where?: string;
+    };
+
+    const parts = [nested.message];
+    if (typeof nested.detail === "string" && nested.detail) parts.push(nested.detail);
+    if (typeof nested.hint === "string" && nested.hint) parts.push(nested.hint);
+    if (typeof nested.where === "string" && nested.where) parts.push(nested.where);
+
+    if (nested.cause && typeof nested.cause === "object") {
+      const cause = nested.cause as {
+        message?: string;
+        detail?: string;
+        hint?: string;
+        where?: string;
+      };
+      if (cause.message) parts.push(cause.message);
+      if (cause.detail) parts.push(cause.detail);
+      if (cause.hint) parts.push(cause.hint);
+      if (cause.where) parts.push(cause.where);
+    }
+
+    return parts.filter(Boolean).join(" | ");
+  }
   if (typeof error === "string") return error;
   return "Unknown error";
 }
@@ -22,20 +49,21 @@ function mapDbErrorToUserMessage(dbMessage: string): string {
     normalized.includes("column") &&
     (normalized.includes("charter_type") ||
       normalized.includes("charter_end_date") ||
-      normalized.includes("cruising_destination"))
+      normalized.includes("cruising_destination") ||
+      normalized.includes("departure_location"))
   ) {
     return "Booking table columns are out of sync with this app version. Please run the latest database migration.";
   }
 
   if (
-    normalized.includes("null value") &&
+    (normalized.includes("null value") || normalized.includes("not-null constraint")) &&
     (normalized.includes("charter_type") || normalized.includes("departure_location"))
   ) {
     return "A required booking field was empty. Please choose both a charter type and departure location.";
   }
 
   if (
-    normalized.includes("null value") &&
+    (normalized.includes("null value") || normalized.includes("not-null constraint")) &&
     (normalized.includes("charter_end_date") || normalized.includes("cruising_destination"))
   ) {
     return "Your production database requires legacy booking fields. Please run the latest migration to update the booking table.";
@@ -50,9 +78,19 @@ function mapDbErrorToUserMessage(dbMessage: string): string {
   }
 
   if (
+    normalized.includes("failed query") &&
+    (normalized.includes("charter_end_date") ||
+      normalized.includes("cruising_destination") ||
+      normalized.includes("contact_method_whatsapp"))
+  ) {
+    return "Your bookings table is on an older schema. Run the latest database migration, then try again.";
+  }
+
+  if (
     normalized.includes("failed to connect") ||
     normalized.includes("connect econnrefused") ||
-    normalized.includes("connection terminated")
+    normalized.includes("connection terminated") ||
+    normalized.includes("connection refused")
   ) {
     return "Database connection failed. Check your database connection settings and try again.";
   }
