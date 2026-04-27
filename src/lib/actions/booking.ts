@@ -1,6 +1,5 @@
 "use server";
 import { db } from "@/lib/db";
-import { bookings } from "@/lib/db/schema";
 import { bookingSchema, type BookingFormData } from "@/lib/schemas/booking";
 import { sendBookingEmails } from "@/lib/email";
 import { getDateUnavailableMessage } from "@/lib/booking-availability";
@@ -113,117 +112,88 @@ type CreateBookingResult =
   | { success: true; bookingId: string }
   | { success: false; message: string };
 
-function shouldTryLegacyInsert(dbMessage: string): boolean {
-  const normalized = dbMessage.toLowerCase();
-  return (
-    normalized.includes("charter_end_date") ||
-    normalized.includes("cruising_destination") ||
-    normalized.includes("contact_method_whatsapp") ||
-    normalized.includes("purpose_leisure") ||
-    (normalized.includes("column") && normalized.includes("charter_type"))
-  );
+type BookingColumnInfo = {
+  columnName: string;
+  isNullable: "YES" | "NO";
+  hasDefault: boolean;
+};
+
+async function getBookingColumns(): Promise<BookingColumnInfo[]> {
+  return db.execute<BookingColumnInfo>(sql`
+    select
+      column_name as "columnName",
+      is_nullable as "isNullable",
+      (column_default is not null) as "hasDefault"
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'bookings'
+    order by ordinal_position
+  `);
 }
 
-async function runLegacyInsert(d: BookingFormData): Promise<string | null> {
-  try {
-    const legacyResult = await db.execute<{ id: string }>(sql`
-      insert into bookings (
-        status,
-        full_name,
-        email,
-        phone,
-        contact_method_email,
-        contact_method_phone,
-        contact_method_whatsapp,
-        number_of_guests,
-        charter_start_date,
-        charter_end_date,
-        flexible_dates,
-        departure_location,
-        cruising_destination,
-        purpose_leisure,
-        purpose_celebration,
-        purpose_corporate,
-        purpose_wedding,
-        purpose_other,
-        purpose_other_desc
-      ) values (
-        ${"pending"},
-        ${d.fullName},
-        ${d.email},
-        ${d.phone},
-        ${d.contactMethodEmail},
-        ${d.contactMethodPhone},
-        ${false},
-        ${d.numberOfGuests},
-        ${d.charterStartDate},
-        ${d.charterStartDate},
-        ${d.flexibleDates},
-        ${d.departureLocation},
-        ${d.charterType},
-        ${false},
-        ${d.purposeCelebration},
-        ${d.purposeCorporate},
-        ${d.purposeWedding},
-        ${d.purposeOther},
-        ${d.purposeOther ? (d.purposeOtherDesc ?? null) : null}
-      )
-      returning id
-    `);
-    return legacyResult[0]?.id ?? null;
-  } catch (fullLegacyError) {
-    const fullLegacyMessage = getErrorMessage(fullLegacyError).toLowerCase();
+function buildCandidateValues(d: BookingFormData): Record<string, unknown> {
+  const purposeOtherDesc = d.purposeOther ? (d.purposeOtherDesc ?? null) : null;
+  return {
+    status: "pending",
+    full_name: d.fullName,
+    email: d.email,
+    phone: d.phone,
+    contact_method_email: d.contactMethodEmail,
+    contact_method_phone: d.contactMethodPhone,
+    contact_method_whatsapp: false,
+    number_of_guests: d.numberOfGuests,
+    charter_start_date: d.charterStartDate,
+    charter_end_date: d.charterStartDate,
+    flexible_dates: d.flexibleDates,
+    charter_type: d.charterType,
+    departure_location: d.departureLocation,
+    cruising_destination: d.charterType,
+    purpose_leisure: false,
+    purpose_celebration: d.purposeCelebration,
+    purpose_corporate: d.purposeCorporate,
+    purpose_wedding: d.purposeWedding,
+    purpose_other: d.purposeOther,
+    purpose_other_desc: purposeOtherDesc,
+  };
+}
 
-    // Some production schemas are "partially legacy" and may miss one of these columns.
-    if (
-      fullLegacyMessage.includes("column") &&
-      (fullLegacyMessage.includes("contact_method_whatsapp") || fullLegacyMessage.includes("purpose_leisure"))
-    ) {
-      const fallbackResult = await db.execute<{ id: string }>(sql`
-        insert into bookings (
-          status,
-          full_name,
-          email,
-          phone,
-          contact_method_email,
-          contact_method_phone,
-          number_of_guests,
-          charter_start_date,
-          charter_end_date,
-          flexible_dates,
-          departure_location,
-          cruising_destination,
-          purpose_celebration,
-          purpose_corporate,
-          purpose_wedding,
-          purpose_other,
-          purpose_other_desc
-        ) values (
-          ${"pending"},
-          ${d.fullName},
-          ${d.email},
-          ${d.phone},
-          ${d.contactMethodEmail},
-          ${d.contactMethodPhone},
-          ${d.numberOfGuests},
-          ${d.charterStartDate},
-          ${d.charterStartDate},
-          ${d.flexibleDates},
-          ${d.departureLocation},
-          ${d.charterType},
-          ${d.purposeCelebration},
-          ${d.purposeCorporate},
-          ${d.purposeWedding},
-          ${d.purposeOther},
-          ${d.purposeOther ? (d.purposeOtherDesc ?? null) : null}
-        )
-        returning id
-      `);
-      return fallbackResult[0]?.id ?? null;
-    }
+function getMissingRequiredColumns(columns: BookingColumnInfo[], insertColumns: string[]): string[] {
+  const insertSet = new Set(insertColumns);
+  return columns
+    .filter((column) => column.isNullable === "NO" && !column.hasDefault && !insertSet.has(column.columnName))
+    .map((column) => column.columnName);
+}
 
-    throw fullLegacyError;
+async function runAdaptiveInsert(
+  d: BookingFormData,
+  withLegacyCharterFallback: boolean,
+): Promise<{ id: string } | null> {
+  const columns = await getBookingColumns();
+  if (!columns.length) throw new Error("Bookings table not found.");
+
+  const tableColumnNames = new Set(columns.map((column) => column.columnName));
+  const values = buildCandidateValues(d);
+
+  if (withLegacyCharterFallback && values.charter_type === "Daytime Charter") {
+    values.charter_type = "Bachelorette Party";
   }
+
+  const insertColumns = Object.keys(values).filter((key) => tableColumnNames.has(key));
+  const missingRequired = getMissingRequiredColumns(columns, insertColumns);
+  if (missingRequired.length > 0) {
+    throw new Error(`Missing required booking columns: ${missingRequired.join(", ")}`);
+  }
+
+  const columnFragments = insertColumns.map((column) => sql.raw(`"${column}"`));
+  const valueFragments = insertColumns.map((column) => sql`${values[column]}`);
+
+  const result = await db.execute<{ id: string }>(sql`
+    insert into "bookings" (${sql.join(columnFragments, sql`, `)})
+    values (${sql.join(valueFragments, sql`, `)})
+    returning "id"
+  `);
+
+  return result[0] ?? null;
 }
 
 export async function createBooking(data: BookingFormData): Promise<CreateBookingResult> {
@@ -236,51 +206,44 @@ export async function createBooking(data: BookingFormData): Promise<CreateBookin
     return { success: false, message: unavailableDateMessage };
   }
 
-  const bookingValues = {
-    ...d,
-    purposeOtherDesc: d.purposeOther ? (d.purposeOtherDesc ?? null) : null,
-    status: "pending" as const,
-  };
-
-  let result;
   try {
-    result = await db.insert(bookings).values(bookingValues).returning({ id: bookings.id });
+    const created = await runAdaptiveInsert(d, false);
+    if (!created?.id) {
+      return { success: false, message: "Failed to create booking" };
+    }
+
+    await sendBookingEmails(d, created.id).catch((err) => {
+      console.error("Failed to send booking emails:", err);
+    });
+
+    return { success: true, bookingId: created.id };
   } catch (error) {
     const dbMessage = getErrorMessage(error);
+    const normalized = dbMessage.toLowerCase();
 
-    // Backward-compatibility fallback for older production DB enum values.
     if (
       d.charterType === "Daytime Charter" &&
-      dbMessage.includes("charter_type") &&
-      dbMessage.toLowerCase().includes("enum")
+      normalized.includes("charter_type") &&
+      normalized.includes("enum")
     ) {
-      result = await db
-        .insert(bookings)
-        .values({ ...bookingValues, charterType: "Bachelorette Party" })
-        .returning({ id: bookings.id });
-    } else if (shouldTryLegacyInsert(dbMessage)) {
       try {
-        const legacyId = await runLegacyInsert(d);
-        if (!legacyId) {
+        const created = await runAdaptiveInsert(d, true);
+        if (!created?.id) {
           return { success: false, message: "Failed to create booking" };
         }
 
-        result = [{ id: legacyId }];
-      } catch (legacyError) {
-        console.error("Failed to create booking (legacy fallback):", legacyError);
-        return { success: false, message: mapDbErrorToUserMessage(getErrorMessage(legacyError)) };
+        await sendBookingEmails(d, created.id).catch((err) => {
+          console.error("Failed to send booking emails:", err);
+        });
+
+        return { success: true, bookingId: created.id };
+      } catch (retryError) {
+        console.error("Failed to create booking after legacy charter fallback:", retryError);
+        return { success: false, message: mapDbErrorToUserMessage(getErrorMessage(retryError)) };
       }
-    } else {
-      console.error("Failed to create booking:", error);
-      return { success: false, message: mapDbErrorToUserMessage(dbMessage) };
     }
+
+    console.error("Failed to create booking:", error);
+    return { success: false, message: mapDbErrorToUserMessage(dbMessage) };
   }
-
-  if (!result?.[0]) return { success: false, message: "Failed to create booking" };
-
-  await sendBookingEmails(d, result[0].id).catch((err) => {
-    console.error("Failed to send booking emails:", err);
-  });
-
-  return { success: true, bookingId: result[0].id };
 }
