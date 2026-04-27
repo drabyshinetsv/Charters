@@ -46,12 +46,18 @@ function mapDbErrorToUserMessage(dbMessage: string): string {
     return "Your database still has old charter type options. Please run the latest database migration, then try again.";
   }
 
+  if (normalized.includes("departure_location") && normalized.includes("enum")) {
+    return "Departure location value is not accepted by the current database enum. Please update database migrations.";
+  }
+
   if (
     normalized.includes("column") &&
     (normalized.includes("charter_type") ||
       normalized.includes("charter_end_date") ||
       normalized.includes("cruising_destination") ||
-      normalized.includes("departure_location"))
+      normalized.includes("departure_location") ||
+      normalized.includes("contact_method_whatsapp") ||
+      normalized.includes("purpose_leisure"))
   ) {
     return "Booking table columns are out of sync with this app version. Please run the latest database migration.";
   }
@@ -96,6 +102,10 @@ function mapDbErrorToUserMessage(dbMessage: string): string {
     return "Database connection failed. Check your database connection settings and try again.";
   }
 
+  if (normalized.includes("permission denied") || normalized.includes("row-level security")) {
+    return "Database permissions are blocking booking inserts. Please check table permissions or RLS policies.";
+  }
+
   return "We could not submit your booking right now. Please try again.";
 }
 
@@ -109,8 +119,111 @@ function shouldTryLegacyInsert(dbMessage: string): boolean {
     normalized.includes("charter_end_date") ||
     normalized.includes("cruising_destination") ||
     normalized.includes("contact_method_whatsapp") ||
+    normalized.includes("purpose_leisure") ||
     (normalized.includes("column") && normalized.includes("charter_type"))
   );
+}
+
+async function runLegacyInsert(d: BookingFormData): Promise<string | null> {
+  try {
+    const legacyResult = await db.execute<{ id: string }>(sql`
+      insert into bookings (
+        status,
+        full_name,
+        email,
+        phone,
+        contact_method_email,
+        contact_method_phone,
+        contact_method_whatsapp,
+        number_of_guests,
+        charter_start_date,
+        charter_end_date,
+        flexible_dates,
+        departure_location,
+        cruising_destination,
+        purpose_leisure,
+        purpose_celebration,
+        purpose_corporate,
+        purpose_wedding,
+        purpose_other,
+        purpose_other_desc
+      ) values (
+        ${"pending"},
+        ${d.fullName},
+        ${d.email},
+        ${d.phone},
+        ${d.contactMethodEmail},
+        ${d.contactMethodPhone},
+        ${false},
+        ${d.numberOfGuests},
+        ${d.charterStartDate},
+        ${d.charterStartDate},
+        ${d.flexibleDates},
+        ${d.departureLocation},
+        ${d.charterType},
+        ${false},
+        ${d.purposeCelebration},
+        ${d.purposeCorporate},
+        ${d.purposeWedding},
+        ${d.purposeOther},
+        ${d.purposeOther ? (d.purposeOtherDesc ?? null) : null}
+      )
+      returning id
+    `);
+    return legacyResult[0]?.id ?? null;
+  } catch (fullLegacyError) {
+    const fullLegacyMessage = getErrorMessage(fullLegacyError).toLowerCase();
+
+    // Some production schemas are "partially legacy" and may miss one of these columns.
+    if (
+      fullLegacyMessage.includes("column") &&
+      (fullLegacyMessage.includes("contact_method_whatsapp") || fullLegacyMessage.includes("purpose_leisure"))
+    ) {
+      const fallbackResult = await db.execute<{ id: string }>(sql`
+        insert into bookings (
+          status,
+          full_name,
+          email,
+          phone,
+          contact_method_email,
+          contact_method_phone,
+          number_of_guests,
+          charter_start_date,
+          charter_end_date,
+          flexible_dates,
+          departure_location,
+          cruising_destination,
+          purpose_celebration,
+          purpose_corporate,
+          purpose_wedding,
+          purpose_other,
+          purpose_other_desc
+        ) values (
+          ${"pending"},
+          ${d.fullName},
+          ${d.email},
+          ${d.phone},
+          ${d.contactMethodEmail},
+          ${d.contactMethodPhone},
+          ${d.numberOfGuests},
+          ${d.charterStartDate},
+          ${d.charterStartDate},
+          ${d.flexibleDates},
+          ${d.departureLocation},
+          ${d.charterType},
+          ${d.purposeCelebration},
+          ${d.purposeCorporate},
+          ${d.purposeWedding},
+          ${d.purposeOther},
+          ${d.purposeOther ? (d.purposeOtherDesc ?? null) : null}
+        )
+        returning id
+      `);
+      return fallbackResult[0]?.id ?? null;
+    }
+
+    throw fullLegacyError;
+  }
 }
 
 export async function createBooking(data: BookingFormData): Promise<CreateBookingResult> {
@@ -147,52 +260,7 @@ export async function createBooking(data: BookingFormData): Promise<CreateBookin
         .returning({ id: bookings.id });
     } else if (shouldTryLegacyInsert(dbMessage)) {
       try {
-        const legacyResult = await db.execute<{ id: string }>(sql`
-          insert into bookings (
-            status,
-            full_name,
-            email,
-            phone,
-            contact_method_email,
-            contact_method_phone,
-            contact_method_whatsapp,
-            number_of_guests,
-            charter_start_date,
-            charter_end_date,
-            flexible_dates,
-            departure_location,
-            cruising_destination,
-            purpose_leisure,
-            purpose_celebration,
-            purpose_corporate,
-            purpose_wedding,
-            purpose_other,
-            purpose_other_desc
-          ) values (
-            ${"pending"},
-            ${d.fullName},
-            ${d.email},
-            ${d.phone},
-            ${d.contactMethodEmail},
-            ${d.contactMethodPhone},
-            ${false},
-            ${d.numberOfGuests},
-            ${d.charterStartDate},
-            ${d.charterStartDate},
-            ${d.flexibleDates},
-            ${d.departureLocation},
-            ${d.charterType},
-            ${false},
-            ${d.purposeCelebration},
-            ${d.purposeCorporate},
-            ${d.purposeWedding},
-            ${d.purposeOther},
-            ${d.purposeOther ? (d.purposeOtherDesc ?? null) : null}
-          )
-          returning id
-        `);
-
-        const legacyId = legacyResult[0]?.id;
+        const legacyId = await runLegacyInsert(d);
         if (!legacyId) {
           return { success: false, message: "Failed to create booking" };
         }
