@@ -88,7 +88,7 @@ export default function BookingPage() {
     },
   });
 
-  const onSubmit = async (_data: BookingFormData) => {
+  const onSubmit = async () => {
     try {
       setIsSubmitting(true);
       const localBookingId =
