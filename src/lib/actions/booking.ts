@@ -29,9 +29,32 @@ function mapDbErrorToUserMessage(dbMessage: string): string {
 
   if (
     normalized.includes("null value") &&
+    (normalized.includes("charter_type") || normalized.includes("departure_location"))
+  ) {
+    return "A required booking field was empty. Please choose both a charter type and departure location.";
+  }
+
+  if (
+    normalized.includes("null value") &&
     (normalized.includes("charter_end_date") || normalized.includes("cruising_destination"))
   ) {
     return "Your production database requires legacy booking fields. Please run the latest migration to update the booking table.";
+  }
+
+  if (
+    normalized.includes("relation") &&
+    normalized.includes("bookings") &&
+    normalized.includes("does not exist")
+  ) {
+    return "The bookings table is missing. Run database migrations, then try again.";
+  }
+
+  if (
+    normalized.includes("failed to connect") ||
+    normalized.includes("connect econnrefused") ||
+    normalized.includes("connection terminated")
+  ) {
+    return "Database connection failed. Check your database connection settings and try again.";
   }
 
   return "We could not submit your booking right now. Please try again.";

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
-import { Loader2, CheckCircle2, Phone } from "lucide-react";
+import { Loader2, CheckCircle2, Phone, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -18,8 +18,47 @@ import { isDateUnavailable } from "@/lib/booking-availability";
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-colors";
 
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+] as const;
+
+function toIsoLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDisplayDate(isoDate: string): string {
+  const parsed = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
+}
+
 export default function BookingPage() {
   const [submitted, setSubmitted] = useState<{ bookingId: string } | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const calendarContainerRef = useRef<HTMLDivElement | null>(null);
+  const [visibleMonth, setVisibleMonth] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
 
   const {
     register,
@@ -67,24 +106,73 @@ export default function BookingPage() {
 
   const flexibleDates = watch("flexibleDates");
   const purposeOther = watch("purposeOther");
-  const charterDateRegister = register("charterStartDate", {
-    onChange: (event) => {
-      const selectedDate = event.target.value as string;
-      if (!selectedDate) return;
+  const selectedDate = watch("charterStartDate");
 
-      if (isDateUnavailable(selectedDate)) {
-        setValue("charterStartDate", "", { shouldValidate: true });
-        setError("charterStartDate", {
-          type: "validate",
-          message: "Please choose Monday, Wednesday, or Thursday.",
-        });
-        toast.error("Only Monday, Wednesday, and Thursday can be selected.");
-        return;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayIso = toIsoLocalDate(today);
+
+  const calendarDays = useMemo(() => {
+    const year = visibleMonth.getFullYear();
+    const month = visibleMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const firstDayWeekday = firstDay.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const cells: Array<{ iso: string; dayNumber: number; hidden: boolean }> = [];
+    for (let i = 0; i < firstDayWeekday; i++) {
+      cells.push({ iso: "", dayNumber: 0, hidden: true });
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      cells.push({ iso: toIsoLocalDate(date), dayNumber: day, hidden: false });
+    }
+
+    return cells;
+  }, [visibleMonth]);
+
+  const handleDateSelect = (isoDate: string) => {
+    if (isoDate < todayIso) return;
+
+    if (isDateUnavailable(isoDate)) {
+      setError("charterStartDate", {
+        type: "validate",
+        message: "Please choose Monday, Wednesday, or Thursday.",
+      });
+      toast.error("Only Monday, Wednesday, and Thursday can be selected.");
+      return;
+    }
+
+    setValue("charterStartDate", isoDate, { shouldValidate: true, shouldDirty: true });
+    clearErrors("charterStartDate");
+    setIsCalendarOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!calendarContainerRef.current) return;
+      const targetNode = event.target as Node;
+      if (!calendarContainerRef.current.contains(targetNode)) {
+        setIsCalendarOpen(false);
       }
+    };
 
-      clearErrors("charterStartDate");
-    },
-  });
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isCalendarOpen]);
 
   if (submitted) {
     return (
@@ -250,13 +338,105 @@ export default function BookingPage() {
                 <Label htmlFor="charterStartDate" className="mb-1.5 block text-sm font-medium text-gray-700">
                   Preferred Dates
                 </Label>
-                <input
-                  id="charterStartDate"
-                  type="date"
-                  {...charterDateRegister}
-                  aria-invalid={!!errors.charterStartDate}
-                  className={cn(inputClass, errors.charterStartDate && "border-red-400 focus:border-red-400 focus:ring-red-400/20")}
-                />
+                <div ref={calendarContainerRef}>
+                  <input type="hidden" {...register("charterStartDate")} />
+                  <button
+                    id="charterStartDate"
+                    type="button"
+                    onClick={() => setIsCalendarOpen((open) => !open)}
+                    aria-invalid={!!errors.charterStartDate}
+                    className={cn(
+                      inputClass,
+                      "flex items-center justify-between text-left",
+                      !selectedDate && "text-gray-400",
+                      errors.charterStartDate && "border-red-400 focus:border-red-400 focus:ring-red-400/20"
+                    )}
+                  >
+                    <span>{selectedDate ? formatDisplayDate(selectedDate) : "mm/dd/yyyy"}</span>
+                    <CalendarIcon className="w-4 h-4 text-gray-500" />
+                  </button>
+                  {isCalendarOpen && (
+                    <div className="mt-3 rounded-lg border border-gray-200 p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setVisibleMonth(
+                            (current) => new Date(current.getFullYear(), current.getMonth() - 1, 1)
+                          )
+                        }
+                        className="rounded-md border border-gray-200 p-1.5 text-gray-700 hover:bg-gray-50"
+                        aria-label="Previous month"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <p className="text-sm font-medium text-gray-800">
+                        {MONTH_NAMES[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setVisibleMonth(
+                            (current) => new Date(current.getFullYear(), current.getMonth() + 1, 1)
+                          )
+                        }
+                        className="rounded-md border border-gray-200 p-1.5 text-gray-700 hover:bg-gray-50"
+                        aria-label="Next month"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500">
+                      {WEEKDAY_LABELS.map((weekday) => (
+                        <div key={weekday} className="py-1">
+                          {weekday}
+                        </div>
+                      ))}
+                    </div>
+
+                      <div className="mt-1 grid grid-cols-7 gap-1">
+                        {calendarDays.map((cell, idx) => {
+                          if (cell.hidden) return <div key={`empty-${idx}`} className="h-9" />;
+
+                          const isBlocked = isDateUnavailable(cell.iso);
+                          const isPast = cell.iso < todayIso;
+                          const isDisabled = isBlocked || isPast;
+                          const isSelected = cell.iso === selectedDate;
+
+                          return (
+                            <button
+                              key={cell.iso}
+                              type="button"
+                              onClick={() => handleDateSelect(cell.iso)}
+                              disabled={isDisabled}
+                              className={cn(
+                                "h-9 rounded-md text-sm transition-colors",
+                                isSelected && "bg-blue-600 text-white",
+                                !isSelected && !isDisabled && "text-gray-800 hover:bg-blue-50",
+                                isDisabled && "cursor-not-allowed bg-gray-100 text-gray-400 line-through"
+                              )}
+                              aria-label={`Select ${cell.iso}`}
+                            >
+                              {cell.dayNumber}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-4 text-xs text-gray-600">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
+                          <span>Available (Mon, Wed, Thu)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-gray-300" />
+                          <span>Blocked</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <p className="text-xs text-gray-500 mt-1">Available days: Monday, Wednesday, Thursday</p>
                 {errors.charterStartDate && <p className="text-sm text-red-500 mt-1">{errors.charterStartDate.message}</p>}
               </div>
