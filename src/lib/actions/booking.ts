@@ -4,6 +4,7 @@ import { bookings } from "@/lib/db/schema";
 import { bookingSchema, type BookingFormData } from "@/lib/schemas/booking";
 import { sendBookingEmails } from "@/lib/email";
 import { getDateUnavailableMessage } from "@/lib/booking-availability";
+import { sql } from "drizzle-orm";
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -102,6 +103,16 @@ type CreateBookingResult =
   | { success: true; bookingId: string }
   | { success: false; message: string };
 
+function shouldTryLegacyInsert(dbMessage: string): boolean {
+  const normalized = dbMessage.toLowerCase();
+  return (
+    normalized.includes("charter_end_date") ||
+    normalized.includes("cruising_destination") ||
+    normalized.includes("contact_method_whatsapp") ||
+    (normalized.includes("column") && normalized.includes("charter_type"))
+  );
+}
+
 export async function createBooking(data: BookingFormData): Promise<CreateBookingResult> {
   const parsed = bookingSchema.safeParse(data);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Invalid form data" };
@@ -134,6 +145,63 @@ export async function createBooking(data: BookingFormData): Promise<CreateBookin
         .insert(bookings)
         .values({ ...bookingValues, charterType: "Bachelorette Party" })
         .returning({ id: bookings.id });
+    } else if (shouldTryLegacyInsert(dbMessage)) {
+      try {
+        const legacyResult = await db.execute<{ id: string }>(sql`
+          insert into bookings (
+            status,
+            full_name,
+            email,
+            phone,
+            contact_method_email,
+            contact_method_phone,
+            contact_method_whatsapp,
+            number_of_guests,
+            charter_start_date,
+            charter_end_date,
+            flexible_dates,
+            departure_location,
+            cruising_destination,
+            purpose_leisure,
+            purpose_celebration,
+            purpose_corporate,
+            purpose_wedding,
+            purpose_other,
+            purpose_other_desc
+          ) values (
+            ${"pending"},
+            ${d.fullName},
+            ${d.email},
+            ${d.phone},
+            ${d.contactMethodEmail},
+            ${d.contactMethodPhone},
+            ${false},
+            ${d.numberOfGuests},
+            ${d.charterStartDate},
+            ${d.charterStartDate},
+            ${d.flexibleDates},
+            ${d.departureLocation},
+            ${d.charterType},
+            ${false},
+            ${d.purposeCelebration},
+            ${d.purposeCorporate},
+            ${d.purposeWedding},
+            ${d.purposeOther},
+            ${d.purposeOther ? (d.purposeOtherDesc ?? null) : null}
+          )
+          returning id
+        `);
+
+        const legacyId = legacyResult.rows?.[0]?.id;
+        if (!legacyId) {
+          return { success: false, message: "Failed to create booking" };
+        }
+
+        result = [{ id: legacyId }];
+      } catch (legacyError) {
+        console.error("Failed to create booking (legacy fallback):", legacyError);
+        return { success: false, message: mapDbErrorToUserMessage(getErrorMessage(legacyError)) };
+      }
     } else {
       console.error("Failed to create booking:", error);
       return { success: false, message: mapDbErrorToUserMessage(dbMessage) };
