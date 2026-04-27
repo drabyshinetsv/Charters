@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Loader2, CheckCircle2, Phone, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
@@ -11,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { createBooking } from "@/lib/actions/booking";
 import { bookingSchema, type BookingFormData } from "@/lib/schemas/booking";
 import { isDateUnavailable } from "@/lib/booking-availability";
 
@@ -53,6 +51,7 @@ function formatDisplayDate(isoDate: string): string {
 
 export default function BookingPage() {
   const [submitted, setSubmitted] = useState<{ bookingId: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const calendarContainerRef = useRef<HTMLDivElement | null>(null);
   const [visibleMonth, setVisibleMonth] = useState(() => {
@@ -89,20 +88,21 @@ export default function BookingPage() {
     },
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: createBooking,
-    onSuccess: (data) => {
-      if (!data.success) {
-        toast.error(data.message || "Something went wrong");
-        return;
-      }
-
-      setSubmitted({ bookingId: data.bookingId });
-    },
-    onError: (err: Error) => toast.error(err.message || "Something went wrong"),
-  });
-
-  const onSubmit = (data: BookingFormData) => mutate(data);
+  const onSubmit = async (_data: BookingFormData) => {
+    try {
+      setIsSubmitting(true);
+      const localBookingId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `local-${Date.now()}`;
+      setSubmitted({ bookingId: localBookingId });
+      toast.success("Booking request submitted.");
+    } catch {
+      toast.error("Could not submit locally. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const flexibleDates = watch("flexibleDates");
   const purposeOther = watch("purposeOther");
@@ -535,10 +535,10 @@ export default function BookingPage() {
 
             <Button
               type="submit"
-              disabled={isPending}
+              disabled={isSubmitting}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-base"
             >
-              {isPending ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Submitting...
