@@ -88,17 +88,36 @@ export default function BookingPage() {
     },
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: BookingFormData) => {
     try {
       setIsSubmitting(true);
-      const localBookingId =
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `local-${Date.now()}`;
-      setSubmitted({ bookingId: localBookingId });
-      toast.success("Booking request submitted.");
+      const response = await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const raw = await response.text();
+      let result: { success: true; bookingId: string } | { success: false; message: string };
+      try {
+        result = JSON.parse(raw) as typeof result;
+      } catch {
+        toast.error(
+          response.ok
+            ? "Invalid response from server."
+            : `Request failed (${response.status}). Please try again.`,
+        );
+        return;
+      }
+
+      if (result.success) {
+        setSubmitted({ bookingId: result.bookingId });
+        toast.success("Booking request submitted.");
+      } else {
+        toast.error(result.message ?? "Could not submit your booking.");
+      }
     } catch {
-      toast.error("Could not submit locally. Please try again.");
+      toast.error("Could not submit your booking. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
